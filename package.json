@@ -4,11 +4,11 @@
   "description": "Direct Message using twitter",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/SaifuddinTipu/twit-dm.git"
   },
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node main.js"
   },
   "keywords": [
     "twitter",
