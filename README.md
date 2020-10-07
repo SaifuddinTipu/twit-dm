@@ -20,6 +20,6 @@
 
 8. Run npm start
 
-9. Go to localhost:5000 from your web browser.
+9. Go to localhost:5000/activity from your web browser.
 
 That's it. Now you can see the DIRECT MESSAGE EVENTS.
