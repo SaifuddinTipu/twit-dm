@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <title>Account Activity API Sample App</title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.2/gh-fork-ribbon.min.css"
+    />
+
+    <script
+      defer
+      src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"
+    ></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div id="event-container" class="col-sm-12">
+          <!-- Waiting message -->
+          <div id="waiting-msg" class="card">
+            <div class="card-body">
+              <i class="fas fa-clock"></i> Waiting for activity . . .
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSON template -->
+      <script id="json_template" type="text/x-handlebars-template">
+        <div class="card">
+          <div class="json-event card-body">
+            <div id="json-str-{{senderUserID}}" class="form-control" disabled>
+              <div>
+                {{senderScreenName}} says {{messageText}}
+              </div>
+              <form action="/activity" method="post">
+                <input
+                  type="hidden"
+                  placeholder="reply"
+                  name="sender_id"
+                  value="{{senderUserID}}"
+                />
+                <input
+                  type="text"
+                  placeholder="Type your message"
+                  name="chat"
+                />
+                <button type="submit">
+                  send
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </script>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.min.js"></script>
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="/javascript/activity.js"></script>
+
+      <script>
+        activity.connect("<%= socket_host  %>", "<%= activity_event  %>");
+      </script>
+    </div>
+  </body>
+</html>
