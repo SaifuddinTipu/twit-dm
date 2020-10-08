@@ -27,7 +27,7 @@ exports.sendMessage = (req, res, next) => {
 
   // request options
   var request_options = {
-    url: "https://api.twitter.com/1.1/direct_messages/events/new.json",
+    url: `${process.env.POST_MESSAGE_JSON_URL}`,
     oauth: oAuthConfig,
     json: true,
     headers: {
