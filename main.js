@@ -22,7 +22,7 @@ const config = {
   env: process.env.TWITTER_WEBHOOK_ENV,
 };
 
-app.set("port", 5000);
+app.set("port", process.env.PORT);
 app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 
@@ -80,7 +80,7 @@ app.get("/activity", auth.basic, require("./routes/activity"));
 const server = http.createServer(app);
 
 const listener = server.listen(process.env.PORT, async () => {
-  const webhookURL = `https://ca7ad3953e1c.ngrok.io/webhook/twitter`;
+  const webhookURL = `${process.env.WEBHOOK_URL}`;
   const webhook = new Autohook(config);
   await webhook.removeWebhooks();
   await webhook.start(webhookURL);
