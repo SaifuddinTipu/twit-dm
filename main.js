@@ -7,7 +7,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const http = require("http");
 const session = require("express-session");
-var pmrequest = require("request");
+var request = require("request");
 const uuid = require("uuid/v4");
 
 const auth = require("./auth");
@@ -70,7 +70,7 @@ function getDirectMessageRequestOptions(recipientID, messageText) {
 
 function sendDM(recipientID, messageText) {
   // POST request to send Direct Message
-  pmrequest.post(
+  request.post(
     getDirectMessageRequestOptions(recipientID, messageText),
     function (error, response, body) {
       if (error) {
@@ -79,50 +79,46 @@ function sendDM(recipientID, messageText) {
     }
   );
 }
-app.get("/webhook/twitter", async (request, response) => {
+
+app.all("/webhook/twitter", async (request, response) => {
   // Fulfills the CRC check when Twitter sends a CRC challenge
   if (request.query.crc_token) {
     const signature = validateWebhook(request.query.crc_token, {
       consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
     });
     response.json(signature);
-  }
-  else {
-    response.status(400);
-    response.send('Error: crc_token missing from request.')
-  }
-});
-app.post("/webhook/twitter", async (request, response) => {
-  //Detect incoming and outgoing DM events
-  if (request.body.direct_message_events) {
-    var directMessageEvent = request.body.direct_message_events[0];
-    if (directMessageEvent.type == "message_create") {
-      const senderUserID = directMessageEvent.message_create.sender_id;
-      //const sourceAppID = directMessageEvent.message_create.source_app_id;
-      const senderScreenName =
-        request.body.users[directMessageEvent.message_create.sender_id].name;
+  } else {
+    //Detect incoming and outgoing DM events
+    if (request.body.direct_message_events) {
+      var directMessageEvent = request.body.direct_message_events[0];
+      if (directMessageEvent.type == "message_create") {
+        const senderUserID = directMessageEvent.message_create.sender_id;
+        //const sourceAppID = directMessageEvent.message_create.source_app_id;
+        const senderScreenName =
+          request.body.users[directMessageEvent.message_create.sender_id].name;
 
-      var messageText = ``;
+        var messageText = ``;
 
-      if (directMessageEvent.message_create.message_data.attachment) {
-        messageText = `sent an attachment`;
-        console.log(senderScreenName, messageText);
-        sendDM(senderUserID, "You are not allowed to send attachment");
-      } else {
-        messageText = directMessageEvent.message_create.message_data.text;
-        console.log(senderScreenName, `says`, messageText);
+        if (directMessageEvent.message_create.message_data.attachment) {
+          messageText = `sent an attachment`;
+          console.log(senderScreenName, messageText);
+          sendDM(senderUserID, "You are not allowed to send attachment");
+        } else {
+          messageText = directMessageEvent.message_create.message_data.text;
+          console.log(senderScreenName, `says`, messageText);
+        }
+
+        socket.io.emit(socket.activity_event, {
+          internal_id: uuid(),
+          senderUserID: senderUserID,
+          senderScreenName: senderScreenName,
+          messageText: messageText,
+        });
       }
-
-      socket.io.emit(socket.activity_event, {
-        internal_id: uuid(),
-        senderUserID: senderUserID,
-        senderScreenName: senderScreenName,
-        messageText: messageText,
-      });
     }
+    // Send a successful response to Twitter
+    response.sendStatus(200);
   }
-  // Send a successful response to Twitter
-  response.sendStatus(200);
 });
 
 //post direct message
