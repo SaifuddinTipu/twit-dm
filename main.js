@@ -7,7 +7,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const http = require("http");
 const session = require("express-session");
-var request = require("request");
+var pmrequest = require("request");
 const uuid = require("uuid/v4");
 
 const auth = require("./auth");
@@ -70,7 +70,7 @@ function getDirectMessageRequestOptions(recipientID, messageText) {
 
 function sendDM(recipientID, messageText) {
   // POST request to send Direct Message
-  request.post(
+  pmrequest.post(
     getDirectMessageRequestOptions(recipientID, messageText),
     function (error, response, body) {
       if (error) {
