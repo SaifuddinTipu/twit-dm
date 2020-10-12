@@ -91,7 +91,7 @@ app.get("/webhook/twitter", async (request, response) => {
     response.status(400);
     response.send('Error: crc_token missing from request.')
   }
-}
+});
 app.post("/webhook/twitter", async (request, response) => {
   //Detect incoming and outgoing DM events
   if (request.body.direct_message_events) {
