@@ -7,7 +7,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const http = require("http");
 const session = require("express-session");
+var request = require("request");
 const uuid = require("uuid/v4");
+
 const auth = require("./auth");
 const socket = require("./socket");
 
@@ -38,6 +40,46 @@ app.use(
   })
 );
 
+function getDirectMessageRequestOptions(recipientID, messageText) {
+  var dmParameters = {
+    event: {
+      type: "message_create",
+      message_create: {
+        target: {
+          recipient_id: recipientID,
+        },
+        message_data: {
+          text: messageText,
+        },
+      },
+    },
+  };
+
+  var requestOptions = {
+    url: `${process.env.POST_MESSAGE_JSON_URL}`,
+    oauth: config,
+    json: true,
+    headers: {
+      "content-type": "application/json",
+    },
+    body: dmParameters,
+  };
+
+  return requestOptions;
+}
+
+function sendDM(recipientID, messageText) {
+  // POST request to send Direct Message
+  request.post(
+    getDirectMessageRequestOptions(recipientID, messageText),
+    function (error, response, body) {
+      if (error) {
+        console.log(error);
+      }
+    }
+  );
+}
+
 app.all("/webhook/twitter", async (request, response) => {
   // Fulfills the CRC check when Twitter sends a CRC challenge
   if (request.query.crc_token) {
@@ -54,8 +96,17 @@ app.all("/webhook/twitter", async (request, response) => {
         //const sourceAppID = directMessageEvent.message_create.source_app_id;
         const senderScreenName =
           request.body.users[directMessageEvent.message_create.sender_id].name;
-        const messageText = directMessageEvent.message_create.message_data.text;
-        console.log(senderScreenName, `says`, messageText);
+
+        var messageText = ``;
+
+        if (directMessageEvent.message_create.message_data.attachment) {
+          messageText = `sent an attachment`;
+          console.log(senderScreenName, messageText);
+          sendDM(senderUserID, "You are not allowed to send attachment");
+        } else {
+          messageText = directMessageEvent.message_create.message_data.text;
+          console.log(senderScreenName, `says`, messageText);
+        }
 
         socket.io.emit(socket.activity_event, {
           internal_id: uuid(),
